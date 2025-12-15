@@ -73,7 +73,7 @@ const Admin = () => {
                     <p className="text-sm text-muted-foreground">Buyer: {order.profiles?.full_name}</p>
                     <p className="text-sm">₹{order.total_amount}</p>
                   </div>
-                  <Select value={order.status} onValueChange={v => updateOrderStatus(order.id, v)}>
+                  <Select value={order.status} onValueChange={v => updateOrderStatus(order.id, v as "pending" | "confirmed" | "shipped" | "delivered" | "cancelled")}>
                     <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map(s => (
