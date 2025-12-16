@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import ImageUpload from '@/components/ImageUpload';
 
 const Sell = () => {
   const { user } = useAuth();
@@ -72,8 +73,12 @@ const Sell = () => {
             <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="mt-1" />
           </div>
           <div>
-            <label className="text-sm font-medium">Image URL</label>
-            <Input value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://..." className="mt-1" />
+            <label className="text-sm font-medium">Product Image</label>
+            <ImageUpload 
+              onImageUploaded={(url) => setForm({ ...form, imageUrl: url })} 
+              currentImageUrl={form.imageUrl}
+              className="mt-1"
+            />
           </div>
           <Button type="submit" disabled={loading} className="w-full h-12 eco-gradient-primary text-white">
             {loading ? <Loader2 className="animate-spin" /> : 'List Item'}

@@ -5,8 +5,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAllowedDomain } from '@/hooks/useAllowedDomain';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import TermsDialog from '@/components/TermsDialog';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,10 +17,11 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string; terms?: string }>({});
 
   const { signIn, signUp } = useAuth();
-  const { allowedDomain, validateEmail } = useAllowedDomain();
+  const { allowedDomain } = useAllowedDomain();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -68,6 +71,13 @@ const Auth = () => {
           navigate('/');
         }
       } else {
+        // Check terms acceptance first
+        if (!acceptedTerms) {
+          setErrors({ terms: 'You must accept the Terms and Conditions' });
+          setLoading(false);
+          return;
+        }
+
         const result = signupSchema.safeParse({ email, password, fullName });
         if (!result.success) {
           const fieldErrors: { email?: string; password?: string; fullName?: string } = {};
@@ -171,6 +181,30 @@ const Auth = () => {
             )}
           </div>
 
+          {!isLogin && (
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={acceptedTerms}
+                  onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                  className="mt-1"
+                />
+                <label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed">
+                  I agree to the{' '}
+                  <TermsDialog>
+                    <button type="button" className="text-primary font-semibold hover:underline">
+                      Terms and Conditions
+                    </button>
+                  </TermsDialog>
+                </label>
+              </div>
+              {errors.terms && (
+                <p className="text-destructive text-sm">{errors.terms}</p>
+              )}
+            </div>
+          )}
+
           <Button
             type="submit"
             disabled={loading}
@@ -192,6 +226,7 @@ const Auth = () => {
             onClick={() => {
               setIsLogin(!isLogin);
               setErrors({});
+              setAcceptedTerms(false);
             }}
             className="text-secondary font-semibold hover:underline"
           >

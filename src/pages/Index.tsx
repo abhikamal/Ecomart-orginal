@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
@@ -11,9 +11,17 @@ interface Category {
 }
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Redirect to auth if not logged in
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -28,8 +36,15 @@ const Index = () => {
       setLoading(false);
     };
 
-    fetchCategories();
-  }, []);
+    if (user) {
+      fetchCategories();
+    }
+  }, [user]);
+
+  // Show nothing while checking auth
+  if (authLoading || !user) {
+    return null;
+  }
 
   return (
     <Layout>
@@ -46,15 +61,9 @@ const Index = () => {
             <Link to="/products" className="eco-button">
               Buy Items
             </Link>
-            {user ? (
-              <Link to="/sell" className="eco-button-outline">
-                Sell Items
-              </Link>
-            ) : (
-              <Link to="/auth" className="eco-button-outline">
-                Sell Items
-              </Link>
-            )}
+            <Link to="/sell" className="eco-button-outline">
+              Sell Items
+            </Link>
           </div>
         </div>
       </section>

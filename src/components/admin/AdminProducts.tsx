@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Search, Package } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import ImageUpload from '@/components/ImageUpload';
 
 interface Product {
   id: string;
@@ -176,8 +177,12 @@ const AdminProducts = ({ products, categories, onRefresh }: AdminProductsProps) 
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Image URL</label>
-                <Input value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} />
+                <label className="text-sm font-medium">Product Image</label>
+                <ImageUpload
+                  onImageUploaded={(url) => setForm({ ...form, image_url: url })}
+                  currentImageUrl={form.image_url}
+                  className="mt-1"
+                />
               </div>
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium">Available</label>
