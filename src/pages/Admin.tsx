@@ -20,7 +20,6 @@ const Admin = () => {
   const [userRoles, setUserRoles] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-  const [domain, setDomain] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,20 +29,18 @@ const Admin = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [ordersRes, usersRes, rolesRes, productsRes, categoriesRes, settingsRes] = await Promise.all([
+    const [ordersRes, usersRes, rolesRes, productsRes, categoriesRes] = await Promise.all([
       supabase.from('orders').select('*, products(name), profiles!orders_buyer_id_fkey(full_name)').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*'),
       supabase.from('user_roles').select('*'),
       supabase.from('products').select('*, profiles!products_seller_id_fkey(full_name)'),
       supabase.from('categories').select('*').order('name'),
-      supabase.from('admin_settings').select('*').eq('setting_key', 'allowed_email_domain').maybeSingle(),
     ]);
     if (ordersRes.data) setOrders(ordersRes.data);
     if (usersRes.data) setUsers(usersRes.data);
     if (rolesRes.data) setUserRoles(rolesRes.data);
     if (productsRes.data) setProducts(productsRes.data);
     if (categoriesRes.data) setCategories(categoriesRes.data);
-    if (settingsRes.data) setDomain(settingsRes.data.setting_value);
     setLoading(false);
   };
 
@@ -104,7 +101,7 @@ const Admin = () => {
           </TabsContent>
           
           <TabsContent value="settings">
-            <AdminSettings domain={domain} onRefresh={fetchData} />
+            <AdminSettings />
           </TabsContent>
         </Tabs>
       </div>

@@ -24,13 +24,15 @@ const Auth = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string; terms?: string }>({});
 
   const { signIn, signUp } = useAuth();
-  const { allowedDomain } = useAllowedDomain();
+  const { validateEmail, getDomainsText, loading: domainLoading } = useAllowedDomain();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const domainsText = getDomainsText();
+
   const emailSchema = z.string().email('Invalid email address').refine(
-    (val) => val.endsWith(`@${allowedDomain}`),
-    `Only @${allowedDomain} emails allowed`
+    (val) => validateEmail(val),
+    domainsText ? `Only ${domainsText} emails allowed` : 'Invalid email domain'
   );
 
   const loginSchema = z.object({
@@ -192,7 +194,7 @@ const Auth = () => {
             <div>
               <Input
                 type="email"
-                placeholder={`Enter College Email (@${allowedDomain})`}
+                placeholder={domainsText ? `Enter College Email (${domainsText})` : 'Enter your email'}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-12 bg-white border-border"
@@ -241,7 +243,7 @@ const Auth = () => {
           <div>
             <Input
               type="email"
-              placeholder={`Enter College Email (@${allowedDomain})`}
+              placeholder={domainsText ? `Enter College Email (${domainsText})` : 'Enter your email'}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full h-12 bg-white border-border"

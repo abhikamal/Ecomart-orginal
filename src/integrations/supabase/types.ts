@@ -35,6 +35,27 @@ export type Database = {
         }
         Relationships: []
       }
+      allowed_domains: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          domain: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          domain: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          domain?: string
+          id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
