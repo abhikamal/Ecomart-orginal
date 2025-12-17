@@ -91,12 +91,17 @@ const Sell = () => {
         <form onSubmit={handleSubmit} className="glass-card-solid rounded-2xl p-6 space-y-4">
           <div>
             <label className="text-sm font-medium">Item Name *</label>
-            <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1" />
+            <Input 
+              value={form.name} 
+              onChange={e => setForm({ ...form, name: e.target.value })} 
+              className="mt-1" 
+              placeholder="e.g., Engineering Mathematics Textbook, HP Laptop, Study Table"
+            />
           </div>
           <div>
             <label className="text-sm font-medium">Category *</label>
             <Select value={form.categoryId} onValueChange={v => setForm({ ...form, categoryId: v })}>
-              <SelectTrigger className="mt-1"><SelectValue placeholder="Select category" /></SelectTrigger>
+              <SelectTrigger className="mt-1"><SelectValue placeholder="Select a category for your item" /></SelectTrigger>
               <SelectContent>
                 {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
@@ -104,7 +109,14 @@ const Sell = () => {
           </div>
           <div>
             <label className="text-sm font-medium">Price (₹)</label>
-            <Input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} disabled={form.isFree} className="mt-1" />
+            <Input 
+              type="number" 
+              value={form.price} 
+              onChange={e => setForm({ ...form, price: e.target.value })} 
+              disabled={form.isFree} 
+              className="mt-1" 
+              placeholder="e.g., 250, 500, 1500"
+            />
             <label className="flex items-center gap-2 mt-2 text-sm">
               <input type="checkbox" checked={form.isFree} onChange={e => setForm({ ...form, isFree: e.target.checked })} />
               Give away for free
@@ -112,7 +124,12 @@ const Sell = () => {
           </div>
           <div>
             <label className="text-sm font-medium">Description</label>
-            <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="mt-1" />
+            <Textarea 
+              value={form.description} 
+              onChange={e => setForm({ ...form, description: e.target.value })} 
+              className="mt-1 min-h-[120px]" 
+              placeholder="Describe your item in detail. Include:&#10;• Condition (new, like new, good, fair)&#10;• Age or purchase date&#10;• Any defects or issues&#10;• Reason for selling&#10;&#10;Example: Selling my 2nd year Engineering Mathematics textbook by BS Grewal. Used for one semester, in good condition with some highlighting. No torn pages. Selling because I completed the course."
+            />
           </div>
           <div>
             <label className="text-sm font-medium">Product Images</label>
