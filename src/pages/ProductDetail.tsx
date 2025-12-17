@@ -37,14 +37,23 @@ const ProductDetail = () => {
       .from('products')
       .select(`
         *,
-        categories (name),
-        profiles!products_seller_id_fkey (full_name, email)
+        categories (name)
       `)
       .eq('id', id)
       .single();
 
     if (!error && data) {
-      setProduct(data as unknown as Product);
+      // Fetch seller profile separately
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('user_id', data.seller_id)
+        .single();
+
+      setProduct({
+        ...data,
+        profiles: profile
+      } as unknown as Product);
     }
     setLoading(false);
   };

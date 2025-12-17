@@ -60,8 +60,7 @@ const Products = () => {
       .from('products')
       .select(`
         *,
-        categories (name),
-        profiles!products_seller_id_fkey (full_name)
+        categories (name)
       `)
       .eq('is_available', true)
       .order('created_at', { ascending: false });
@@ -75,7 +74,21 @@ const Products = () => {
 
     const { data, error } = await query;
     if (!error && data) {
-      setProducts(data as unknown as Product[]);
+      // Fetch seller profiles separately
+      const sellerIds = [...new Set(data.map(p => p.seller_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', sellerIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      
+      const productsWithProfiles = data.map(product => ({
+        ...product,
+        profiles: profileMap.get(product.seller_id) || null
+      }));
+      
+      setProducts(productsWithProfiles as unknown as Product[]);
     }
     setLoading(false);
   };
