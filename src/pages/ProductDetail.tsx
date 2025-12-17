@@ -124,27 +124,44 @@ const ProductDetail = () => {
       return;
     }
 
-    // Create order
-    const { data: order, error } = await supabase.from('orders').insert({
-      buyer_id: user.id,
-      product_id: product!.id,
-      seller_id: product!.seller_id,
-      total_amount: product!.price,
-      status: 'pending',
-    }).select().single();
-
-    if (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to create order.',
-        variant: 'destructive',
+    try {
+      // Use server-side validated order creation
+      const { data, error } = await supabase.functions.invoke('validate-order', {
+        body: {
+          product_id: product!.id,
+          quantity: 1
+        }
       });
-    } else {
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to create order.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (data?.error) {
+        toast({
+          title: 'Error',
+          description: data.error,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       toast({
         title: 'Order Created!',
         description: 'Your order has been placed successfully.',
       });
       navigate('/orders');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Something went wrong.',
+        variant: 'destructive',
+      });
     }
   };
 

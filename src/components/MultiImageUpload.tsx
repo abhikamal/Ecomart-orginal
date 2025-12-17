@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Upload, X, Loader2, GripVertical } from 'lucide-react';
@@ -17,13 +18,14 @@ const MultiImageUpload = ({
   maxImages = 5,
   className 
 }: MultiImageUploadProps) => {
+  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [images, setImages] = useState<string[]>(currentImages);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+    if (!files.length || !user) return;
 
     const remainingSlots = maxImages - images.length;
     if (remainingSlots <= 0) {
@@ -50,7 +52,8 @@ const MultiImageUpload = ({
     try {
       const uploadPromises = filesToUpload.map(async (file) => {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        // Namespace by user ID for storage security
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
         const { data, error } = await supabase.storage
           .from('product-images')

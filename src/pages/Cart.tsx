@@ -47,18 +47,44 @@ const Cart = () => {
   };
 
   const checkout = async () => {
-    for (const item of items) {
-      await supabase.from('orders').insert({
-        buyer_id: user!.id,
-        product_id: item.products.id,
-        seller_id: item.products.seller_id,
-        total_amount: item.products.price * item.quantity,
-        status: 'pending',
+    try {
+      for (const item of items) {
+        const { data, error } = await supabase.functions.invoke('validate-order', {
+          body: {
+            product_id: item.products.id,
+            quantity: item.quantity
+          }
+        });
+
+        if (error) {
+          toast({ 
+            title: 'Order Failed', 
+            description: error.message || 'Failed to process order',
+            variant: 'destructive' 
+          });
+          return;
+        }
+
+        if (data?.error) {
+          toast({ 
+            title: 'Order Failed', 
+            description: data.error,
+            variant: 'destructive' 
+          });
+          return;
+        }
+      }
+
+      await supabase.from('cart_items').delete().eq('user_id', user!.id);
+      toast({ title: 'Orders placed!', description: 'Check your orders page.' });
+      navigate('/orders');
+    } catch (error: any) {
+      toast({ 
+        title: 'Error', 
+        description: error.message || 'Something went wrong',
+        variant: 'destructive' 
       });
     }
-    await supabase.from('cart_items').delete().eq('user_id', user!.id);
-    toast({ title: 'Orders placed!', description: 'Check your orders page.' });
-    navigate('/orders');
   };
 
   const total = items.reduce((sum, i) => sum + i.products.price * i.quantity, 0);
