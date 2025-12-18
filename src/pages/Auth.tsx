@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowLeft, User, Phone } from 'lucide-react';
 import TermsDialog from '@/components/TermsDialog';
 
 type AuthView = 'login' | 'signup' | 'forgot-password';
@@ -18,10 +18,19 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string; terms?: string }>({});
+  const [errors, setErrors] = useState<{ 
+    email?: string; 
+    password?: string; 
+    fullName?: string; 
+    username?: string;
+    phoneNumber?: string;
+    terms?: string 
+  }>({});
 
   const { signIn, signUp } = useAuth();
   const { validateEmail, getDomainsText, loading: domainLoading } = useAllowedDomain();
@@ -42,6 +51,10 @@ const Auth = () => {
 
   const signupSchema = loginSchema.extend({
     fullName: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
+    username: z.string().min(3, 'Username must be at least 3 characters').max(30, 'Username too long')
+      .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
+    phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits').max(15, 'Phone number too long')
+      .regex(/^[0-9+\-\s]+$/, 'Invalid phone number format'),
   });
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -118,20 +131,22 @@ const Auth = () => {
           return;
         }
 
-        const result = signupSchema.safeParse({ email, password, fullName });
+        const result = signupSchema.safeParse({ email, password, fullName, username, phoneNumber });
         if (!result.success) {
-          const fieldErrors: { email?: string; password?: string; fullName?: string } = {};
+          const fieldErrors: { email?: string; password?: string; fullName?: string; username?: string; phoneNumber?: string } = {};
           result.error.errors.forEach(err => {
             if (err.path[0] === 'email') fieldErrors.email = err.message;
             if (err.path[0] === 'password') fieldErrors.password = err.message;
             if (err.path[0] === 'fullName') fieldErrors.fullName = err.message;
+            if (err.path[0] === 'username') fieldErrors.username = err.message;
+            if (err.path[0] === 'phoneNumber') fieldErrors.phoneNumber = err.message;
           });
           setErrors(fieldErrors);
           setLoading(false);
           return;
         }
 
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUp(email, password, fullName, username, phoneNumber);
         if (error) {
           if (error.message.includes('already registered')) {
             toast({
@@ -226,18 +241,48 @@ const Auth = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {view === 'signup' && (
-            <div>
-              <Input
-                type="text"
-                placeholder="Enter Full Name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full h-12 bg-white border-border"
-              />
-              {errors.fullName && (
-                <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
-              )}
-            </div>
+            <>
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Enter Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full h-12 bg-white border-border"
+                />
+                {errors.fullName && (
+                  <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
+                )}
+              </div>
+
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Choose a username (public)"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full h-12 bg-white border-border pl-10"
+                />
+                {errors.username && (
+                  <p className="text-destructive text-sm mt-1">{errors.username}</p>
+                )}
+              </div>
+
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type="tel"
+                  placeholder="Phone Number (for order confirmation)"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="w-full h-12 bg-white border-border pl-10"
+                />
+                {errors.phoneNumber && (
+                  <p className="text-destructive text-sm mt-1">{errors.phoneNumber}</p>
+                )}
+              </div>
+            </>
           )}
 
           <div>

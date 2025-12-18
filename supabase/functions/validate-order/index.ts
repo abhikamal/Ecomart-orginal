@@ -41,14 +41,31 @@ serve(async (req) => {
       );
     }
 
-    const { product_id, quantity = 1 } = await req.json();
-    console.log(`Validating order - User: ${user.id}, Product: ${product_id}, Quantity: ${quantity}`);
+    const { 
+      product_id, 
+      quantity = 1, 
+      shipping_address = null,
+      buyer_phone = null,
+      payment_method = 'cod'
+    } = await req.json();
+    
+    console.log(`Validating order - User: ${user.id}, Product: ${product_id}, Quantity: ${quantity}, Payment: ${payment_method}`);
 
     // Validate quantity
     if (!Number.isInteger(quantity) || quantity <= 0 || quantity > 100) {
       console.error("Invalid quantity:", quantity);
       return new Response(
         JSON.stringify({ error: "Invalid quantity. Must be between 1 and 100." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate payment method
+    const validPaymentMethods = ['cod', 'online'];
+    if (!validPaymentMethods.includes(payment_method)) {
+      console.error("Invalid payment method:", payment_method);
+      return new Response(
+        JSON.stringify({ error: "Invalid payment method" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -98,6 +115,9 @@ serve(async (req) => {
         seller_id: product.seller_id,
         total_amount,
         status: "pending",
+        shipping_address,
+        buyer_phone,
+        payment_method,
       })
       .select()
       .single();
@@ -110,14 +130,15 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Order created successfully: ${order.id}`);
+    console.log(`Order created successfully: ${order.id}, Receipt: ${order.receipt_number}`);
 
     return new Response(
       JSON.stringify({ 
         order,
         product_name: product.name,
         validated_price: product.price,
-        validated_total: total_amount
+        validated_total: total_amount,
+        receipt_number: order.receipt_number
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

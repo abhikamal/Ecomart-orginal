@@ -112,9 +112,15 @@ export type Database = {
       orders: {
         Row: {
           buyer_id: string
+          buyer_phone: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
           created_at: string
+          executive_notes: string | null
           id: string
+          payment_method: string | null
           product_id: string | null
+          receipt_number: string | null
           seller_id: string | null
           shipping_address: string | null
           status: Database["public"]["Enums"]["order_status"]
@@ -124,9 +130,15 @@ export type Database = {
         }
         Insert: {
           buyer_id: string
+          buyer_phone?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string
+          executive_notes?: string | null
           id?: string
+          payment_method?: string | null
           product_id?: string | null
+          receipt_number?: string | null
           seller_id?: string | null
           shipping_address?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -136,9 +148,15 @@ export type Database = {
         }
         Update: {
           buyer_id?: string
+          buyer_phone?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string
+          executive_notes?: string | null
           id?: string
+          payment_method?: string | null
           product_id?: string | null
+          receipt_number?: string | null
           seller_id?: string | null
           shipping_address?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -287,8 +305,10 @@ export type Database = {
           full_name: string
           id: string
           is_banned: boolean | null
+          phone_number: string | null
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -297,8 +317,10 @@ export type Database = {
           full_name: string
           id?: string
           is_banned?: boolean | null
+          phone_number?: string | null
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -307,8 +329,10 @@ export type Database = {
           full_name?: string
           id?: string
           is_banned?: boolean | null
+          phone_number?: string | null
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }

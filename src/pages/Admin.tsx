@@ -30,7 +30,7 @@ const Admin = () => {
   const fetchData = async () => {
     setLoading(true);
     const [ordersRes, usersRes, rolesRes, productsRes, categoriesRes] = await Promise.all([
-      supabase.from('orders').select('*, products(name), profiles!orders_buyer_id_fkey(full_name)').order('created_at', { ascending: false }),
+      supabase.from('orders').select('*, products(name), profiles!orders_buyer_id_fkey(full_name, phone_number, username)').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*'),
       supabase.from('user_roles').select('*'),
       supabase.from('products').select('*, profiles!products_seller_id_fkey(full_name)'),
