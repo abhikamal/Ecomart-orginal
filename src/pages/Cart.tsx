@@ -52,7 +52,29 @@ const Cart = () => {
       .from('cart_items')
       .select('*, products(*)')
       .eq('user_id', user!.id);
-    if (data) setItems(data as unknown as CartItem[]);
+    if (data) {
+      // Filter out user's own products from cart
+      const filteredItems = (data as unknown as CartItem[]).filter(
+        item => item.products.seller_id !== user!.id
+      );
+      setItems(filteredItems);
+      
+      // If some items were filtered, notify user
+      if (data.length > filteredItems.length) {
+        toast({ 
+          title: 'Some items removed', 
+          description: 'You cannot purchase your own products',
+          variant: 'destructive' 
+        });
+        // Clean up cart - remove user's own products
+        const ownProducts = (data as unknown as CartItem[])
+          .filter(item => item.products.seller_id === user!.id)
+          .map(item => item.id);
+        if (ownProducts.length > 0) {
+          await supabase.from('cart_items').delete().in('id', ownProducts);
+        }
+      }
+    }
     setLoading(false);
   };
 
@@ -95,6 +117,16 @@ const Cart = () => {
     setSubmitting(true);
     try {
       for (const item of items) {
+        // Skip user's own products
+        if (item.products.seller_id === user!.id) {
+          toast({ 
+            title: 'Cannot purchase own product', 
+            description: `${item.products.name} is your own listing`,
+            variant: 'destructive' 
+          });
+          continue;
+        }
+
         const { data, error } = await supabase.functions.invoke('validate-order', {
           body: {
             product_id: item.products.id,
@@ -106,9 +138,18 @@ const Cart = () => {
         });
 
         if (error) {
+          // Try to parse error message from FunctionsHttpError
+          let errorMessage = 'Failed to process order';
+          try {
+            const errorBody = await error.context?.json?.();
+            errorMessage = errorBody?.error || error.message || errorMessage;
+          } catch {
+            errorMessage = error.message || errorMessage;
+          }
+          
           toast({ 
-            title: 'Order Failed', 
-            description: error.message || 'Failed to process order',
+            title: `Order Failed: ${item.products.name}`, 
+            description: errorMessage,
             variant: 'destructive' 
           });
           setSubmitting(false);
@@ -117,7 +158,7 @@ const Cart = () => {
 
         if (data?.error) {
           toast({ 
-            title: 'Order Failed', 
+            title: `Order Failed: ${item.products.name}`, 
             description: data.error,
             variant: 'destructive' 
           });
